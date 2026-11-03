@@ -1,0 +1,47 @@
+# Tests the app and packages it on every push and pull request.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test ./...
+      - run: GOARCH=amd64 go build ./...
+      - run: GOARCH=arm64 go build ./...
+      # The packages: the executable, .deb, tarball, PKGBUILD and install.sh.
+      - run: go tool mygo build -platform linux/amd64,linux/arm64
+      # A release build may grow 20% over 12.4 MB before this asks why.
+      - name: Size
+        run: |
+          size=$(stat -c %s dist/linux-amd64/nanolight)
+          echo "nanolight: $size bytes"
+          test "$size" -le 15600000
+
+  raycast-host:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: raycast
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci && npm test

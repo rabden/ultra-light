@@ -1,0 +1,25 @@
+{
+  "name": "Nanolight",
+  "slug": "nanolight",
+  "identifier": "dev.nanoui.nanolight",
+  "version": "0.2.0",
+  "copyright": "© 2026 Nanolight",
+  "icon": "resources/icon.png",
+  "resourcesExclude": [
+    "*"
+  ],
+  "linux": {
+    "maintainer": "Nanolight <nanolight@users.noreply.github.com>",
+    "comment": "A launcher: apps, math, Google and Raycast extensions",
+    "categories": [
+      "Utility"
+    ],
+    "command": "nanolight",
+    "webview": true,
+    "depends": [
+      "libayatana-appindicator3-1",
+      "libsecret-1-0",
+      "libgtk-layer-shell0"
+    ]
+  }
+}

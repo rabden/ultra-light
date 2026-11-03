@@ -1,0 +1,42 @@
+# Releases the app: a tag v<version> (the version in mygo.json) builds
+# amd64 and arm64 and uploads them, signed for the updater, to a draft
+# release. Publishing the draft makes installed copies update to it.
+#
+# Needs the repository secret MYGO_UPDATER_PRIVATE_KEY, the contents of
+# mygo-update.key from `go tool mygo keygen` (its public key is in
+# mygo.json's updates.publicKey).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    env:
+      CGO_ENABLED: "0"
+      GH_TOKEN: ${{ github.token }}
+      MYGO_UPDATER_PRIVATE_KEY: ${{ secrets.MYGO_UPDATER_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Check the tag, the version and the key
+        run: |
+          version=$(jq -r .version mygo.json)
+          test "$GITHUB_REF_NAME" = "v$version" || { echo "the tag is $GITHUB_REF_NAME, mygo.json says $version"; exit 1; }
+          test -n "$MYGO_UPDATER_PRIVATE_KEY" || { echo "the MYGO_UPDATER_PRIVATE_KEY secret is missing"; exit 1; }
+          test "$(jq -r '.updates.publicKey // empty' mygo.json)" != "" || { echo "mygo.json has no updates.publicKey"; exit 1; }
+      - run: go test ./...
+      - name: Create the draft release
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --draft --verify-tag \
+              --title "Nanolight ${GITHUB_REF_NAME#v}" --notes-file RELEASE.md
+          fi
+      - run: go tool mygo build -platform linux/amd64,linux/arm64 -upload
