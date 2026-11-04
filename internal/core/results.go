@@ -9,7 +9,7 @@ import (
 // What the panel lists for a query, in order: the answer when it is math,
 // the apps that match it (or, with no query, suggestions), then Google: a
 // search for exactly what is typed, first, and Google's completions of it
-// under that; last, the query asked of Grok or searched on X. Port of
+// under that; last, the query asked of Grok. Port of
 // results.zig.
 
 // Mod is the key held for the panel's shortcuts (Ctrl+1, Ctrl+↩, Ctrl+,).
@@ -25,7 +25,6 @@ const (
 	KindCalc Kind = iota
 	KindApp
 	KindAskGrok
-	KindSearchX
 	KindSearchWeb
 	// KindSuggest is one of Google's completions (Row.Web).
 	KindSuggest
@@ -57,8 +56,6 @@ func (k Kind) Action() string {
 		return "Open Settings"
 	case KindAskGrok:
 		return "Ask Grok"
-	case KindSearchX:
-		return "Search X"
 	}
 	return "Search Google"
 }
@@ -77,7 +74,7 @@ func (k Kind) section(suggested bool) string {
 	case KindSearchWeb, KindSuggest:
 		return "Google"
 	}
-	return "Ask & Search"
+	return "Ask"
 }
 
 // Row is one row of the list.
@@ -95,10 +92,10 @@ const (
 	MaxApps = 6
 	// MaxWeb is how many of Google's completions fill what room is left.
 	MaxWeb = 4
-	// MaxRows leaves room, with every app and the three web rows, for
-	// three completions.
+	// MaxRows leaves room, with every app, Google's search and Grok, for
+	// every completion.
 	MaxRows  = MaxApps + 3 + 3
-	handoffs = 3
+	handoffs = 2
 )
 
 // Results is the list for one query.
@@ -152,7 +149,6 @@ func (r *Results) Build(queryIn string, names []string, boost []uint16, suggesti
 		r.push(Row{Kind: KindSuggest, Web: i})
 	}
 	r.push(Row{Kind: KindAskGrok})
-	r.push(Row{Kind: KindSearchX})
 }
 
 // IsSettingsQuery: "settings" and "preferences", the words people type.

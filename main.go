@@ -1,4 +1,4 @@
-// Nanolight for Linux: a launcher for apps, math, Google, Grok, X and
+// Nanolight for Linux: a launcher for apps, math, Google, Grok and
 // Raycast extensions, drawn with mygo's native UI. A port of the Zig app in
 // ../src; see internal/app for how it starts.
 //

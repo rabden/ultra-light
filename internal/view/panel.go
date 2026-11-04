@@ -429,8 +429,6 @@ func (p *Panel) row(c *ui.Context, i int, r core.Row) {
 			switch r.Kind {
 			case core.KindAskGrok:
 				verb, sub = "Ask Grok", "grok.com"
-			case core.KindSearchX:
-				verb, sub = "Search X for", "x.com · Latest"
 			}
 			ui.Text(c, verb+" “"+q+"”").FontSize(13.5).FontWeight(W500).TextColor(pal.Text).SingleLine().Shrink(1)
 			ui.Text(c, sub).FontSize(12).TextColor(pal.Sub.Alpha(0.8)).NoWrap()
@@ -465,10 +463,6 @@ func (p *Panel) tile(c *ui.Context, r core.Row) {
 		side, radius, size = 34, 9, 16
 	}
 	ui.Box(c).Size(side, side).Radius(radius).Background(pal.Tile).Center().Children(func() {
-		if r.Kind == core.KindSearchX {
-			ui.Text(c, "𝕏").FontSize(15).FontWeight(W700).TextColor(pal.Text)
-			return
-		}
 		name := "app.dashed"
 		switch r.Kind {
 		case core.KindCalc:
@@ -758,7 +752,7 @@ func (p *Panel) activateWith(set func(string)) {
 			return
 		}
 		p.Host.Hide()
-	case core.KindAskGrok, core.KindSearchX:
+	case core.KindAskGrok:
 		p.go_(core.URL(r.Kind, p.query))
 	case core.KindSearchWeb:
 		p.Search(p.query, !p.SearchesOut)
