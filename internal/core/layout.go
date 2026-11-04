@@ -10,9 +10,8 @@ const (
 	SectionH    = 28
 	ListPad     = 6
 	PanelRadius = 18
-	// MaxHeight is the tallest the panel gets: every app row, the three web
-	// rows and the completions under three section heads, or a search's
-	// page: 58 + 38 + 2 + 12 + 12×40 + 3×28 = 674.
+	// MaxHeight is the tallest the panel gets, the Mac's: a search's page
+	// (the rows take less): 58 + 38 + 2 + 12 + 12×40 + 3×28 = 674.
 	MaxHeight = HeaderH + FooterH + 2 + ListPad*2 + MaxRows*RowH + 3*SectionH
 	// SettingsHeight: the PC's 560 plus two switch rows (Open Searches in
 	// Browser, Show in Tray), the Mac's 652.

@@ -18,10 +18,10 @@ func TestResults(t *testing.T) {
 	if r.Rows[0].Kind != KindApp || r.Rows[0].App != 0 {
 		t.Fatalf("saf: %+v", r.Rows[0])
 	}
-	if r.Rows[len(r.Rows)-3].Kind != KindSearchWeb {
-		t.Error("Google search must come third from last")
+	if r.Rows[len(r.Rows)-1].Kind != KindSearchWeb {
+		t.Error("Google search must come last")
 	}
-	for i, want := range []string{"Applications", "Google", "Ask & Search", "<none>"} {
+	for i, want := range []string{"Applications", "Google"} {
 		if got := section(t, &r, i); got != want {
 			t.Errorf("section %d = %q, want %q", i, got, want)
 		}
@@ -38,15 +38,15 @@ func TestResults(t *testing.T) {
 	}
 
 	r.Build("liquid glass", names, nil, nil, nil)
-	if len(r.Rows) != 3 || r.Rows[0].Kind != KindSearchWeb || section(t, &r, 0) != "Google" || section(t, &r, 1) != "Ask & Search" {
+	if len(r.Rows) != 1 || r.Rows[0].Kind != KindSearchWeb || section(t, &r, 0) != "Google" {
 		t.Fatalf("no app: %+v", r.Rows)
 	}
 
 	r.Build("liquid gl", names, nil, nil, []string{"liquid glass", "liquid glue"})
-	if len(r.Rows) != 5 || r.Rows[0].Kind != KindSearchWeb || r.Rows[1].Kind != KindSuggest || r.Rows[2].Web != 1 || r.Rows[3].Kind != KindAskGrok {
+	if len(r.Rows) != 3 || r.Rows[0].Kind != KindSearchWeb || r.Rows[1].Kind != KindSuggest || r.Rows[2].Web != 1 {
 		t.Fatalf("completions: %+v", r.Rows)
 	}
-	if section(t, &r, 1) != "<none>" || section(t, &r, 2) != "<none>" || section(t, &r, 3) != "Ask & Search" {
+	if section(t, &r, 1) != "<none>" || section(t, &r, 2) != "<none>" {
 		t.Error("completions must share Google's section")
 	}
 
@@ -57,13 +57,13 @@ func TestResults(t *testing.T) {
 
 	many := []string{"Safari", "Mail", "Maps", "Pages", "Calendar", "Calculator", "FaceTime"}
 	r.Build("a", many, nil, nil, []string{"a1", "a2", "a3", "a4"})
-	if len(r.Rows) != MaxRows || r.Rows[MaxApps].Kind != KindSearchWeb || r.Rows[MaxApps+1].Kind != KindSuggest || r.Rows[MaxRows-1].Kind != KindSearchX {
+	if len(r.Rows) != MaxApps+1+MaxWeb || r.Rows[MaxApps].Kind != KindSearchWeb || r.Rows[MaxApps+1].Kind != KindSuggest || r.Rows[len(r.Rows)-1].Kind != KindSuggest {
 		t.Fatalf("full: %d rows %+v", len(r.Rows), r.Rows)
 	}
 }
 
 func TestURL(t *testing.T) {
-	if got := URL(KindSearchX, " liquid glass & UI "); got != "https://x.com/search?f=live&q=liquid+glass+%26+UI" {
+	if got := URL(KindSuggest, " liquid glass & UI "); got != "https://www.google.com/search?q=liquid+glass+%26+UI" {
 		t.Error(got)
 	}
 	if got := URL(KindSearchWeb, "a/b"); got != "https://www.google.com/search?q=a%2Fb" {

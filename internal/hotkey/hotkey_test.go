@@ -3,7 +3,7 @@ package hotkey
 import "testing"
 
 func TestPresets(t *testing.T) {
-	for i, want := range []string{"Alt Space", "Ctrl Alt Space", "Ctrl Space", "Ctrl Shift Space"} {
+	for i, want := range []string{"Super Space", "Alt Space", "Ctrl Space", "Super Alt Space"} {
 		c := All[i]
 		if c.String() != want {
 			t.Errorf("%d: %q, want %q", i, c.String(), want)
@@ -18,7 +18,7 @@ func TestPresets(t *testing.T) {
 	if CmdSpace.Step(-1) != OptCmdSpace || OptCmdSpace.Step(1) != CmdSpace || CmdSpace.Step(1) != OptSpace {
 		t.Error("steps wrap")
 	}
-	if OptSpace.Accelerator() != "Ctrl+Alt+Space" || len(OptCmdSpace.Mods()) != 2 {
+	if OptSpace.Accelerator() != "Alt+Space" || len(OptCmdSpace.Mods()) != 2 {
 		t.Error("accelerators")
 	}
 }

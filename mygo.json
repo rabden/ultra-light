@@ -5,6 +5,10 @@
   "version": "0.2.0",
   "copyright": "© 2026 Nanolight",
   "icon": "resources/icon.png",
+  "updates": {
+    "publicKey": "HAm5vMPWOqPEcAyuHcw6NYbrRIO0oUX4OqGeblFf0H0=",
+    "github": "rabden/ultra-light"
+  },
   "resourcesExclude": [
     "*"
   ],

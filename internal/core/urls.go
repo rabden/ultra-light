@@ -10,10 +10,6 @@ import (
 func URL(kind Kind, query string) string {
 	var base string
 	switch kind {
-	case KindAskGrok:
-		base = "https://grok.com/?q="
-	case KindSearchX:
-		base = "https://x.com/search?f=live&q="
 	case KindSearchWeb, KindSuggest:
 		base = GoogleSearch
 	default:

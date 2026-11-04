@@ -68,6 +68,9 @@ func gnomeCustomKeys() []hotkey.Binding {
 	}
 	var bs []hotkey.Binding
 	for _, path := range paths[0].Accels {
+		if path == ownPath {
+			continue // Nanolight's own
+		}
 		where := schema + ".custom-keybinding:" + path
 		get := func(key string) string {
 			v, _ := exec.Command("gsettings", "get", where, key).Output()
@@ -168,7 +171,7 @@ func (a *App) takeKey(c hotkey.Choice) {
 	}
 	a.setFreed(fs)
 	a.dkeys.list, a.dkeys.at = readDeskKeys(), time.Now()
-	prefs{a}.Apply(c)
+	a.applyKey(c)
 }
 
 // giveBack puts back the GNOME shortcuts Nanolight took a key from, but

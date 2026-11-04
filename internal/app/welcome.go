@@ -19,14 +19,19 @@ func (a *App) startWelcome() {
 }
 
 // firstFreeKey: on a first run where the default key is the desktop's
-// (Alt Space: GNOME's window menu, KRunner), the first preset that's free
+// (Super Space: GNOME's layout switch; Alt Space: the window menu, KRunner), the first preset that's free
 // is chosen instead (decision 3): one none of the desktop's shortcuts
 // holds, and on X11 one no other app grabbed.
 func (a *App) firstFreeKey() {
 	if a.kv.Has(store.KeyHotkey) {
 		return
 	}
-	if _, taken := a.clash(a.choice); !taken && a.hotkeyErr == nil {
+	b, taken := a.clash(a.choice)
+	if !taken && a.hotkeyErr == nil {
+		return
+	}
+	// GNOME's can be taken over: the welcome says so, and Return takes it.
+	if taken && canFree(b) {
 		return
 	}
 	for _, c := range hotkey.All {

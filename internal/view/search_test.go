@@ -95,13 +95,12 @@ func TestCompletionsKeepSelection(t *testing.T) {
 	if len(r.h.asked) == 0 || r.h.asked[len(r.h.asked)-1] != "liquid gl" {
 		t.Fatalf("asked %q", r.h.asked)
 	}
-	r.tt.Key(0, ui.KeyDown) // Grok
 	r.p.Answered("liquid gl", []string{"liquid glass", "liquid glue"})
 	r.tt.Frame()
 	r.snap("completions")
 	rows, sel := r.p.Rows()
-	if rows[sel].Kind != core.KindAskGrok {
-		t.Fatalf("selection moved off Grok: %+v %d", rows, sel)
+	if rows[sel].Kind != core.KindSearchWeb {
+		t.Fatalf("selection moved off the search: %+v %d", rows, sel)
 	}
 	if !r.tt.HasText("liquid glass") || !r.tt.HasText("ass") {
 		t.Errorf("completions and ghost: %q", r.tt.Texts())

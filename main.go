@@ -1,4 +1,4 @@
-// Nanolight for Linux: a launcher for apps, math, Google, Grok, X and
+// Nanolight for Linux: a launcher for apps, math, Google and
 // Raycast extensions, drawn with mygo's native UI. A port of the Zig app in
 // ../src; see internal/app for how it starts.
 //
@@ -26,6 +26,10 @@ func main() {
 		}
 	}
 	mygo.App.SetName("Nanolight")
+	// The Google page draws with WebKitGTK's DMA-BUF renderer where the
+	// host can (Wayland, a Mesa GPU), as Epiphany does: its fallback breaks
+	// up on hover on GNOME with AMD graphics.
+	mygo.App.SetDMABUFRenderer(mygo.DMABUFRendererAuto)
 	if !mygo.App.RequestSingleInstanceLock() {
 		return // the running copy shows or hides its panel (OnSecondInstance)
 	}

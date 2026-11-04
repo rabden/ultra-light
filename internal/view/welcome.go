@@ -12,7 +12,7 @@ import (
 
 // The first run, inside the panel itself (onboard.zig). Three steps, each
 // one thing to do:
-//  1. the shortcut: Alt Space by default, and whether something else holds
+//  1. the shortcut: Super Space by default, and whether something else holds
 //     it, with the one thing that frees it;
 //  2. press it for real: the panel closes, and comes back on the second
 //     press (a desktop shortcut running nanolight --toggle counts);
@@ -67,11 +67,11 @@ type WelcomeHost interface {
 
 type example struct{ q, what, icon string }
 
-// An app every Linux has, math, and words for Grok or X.
+// An app every Linux has, math, and words for Google.
 var examples = []example{
 	{"term", "Open a terminal", "terminal"},
 	{"2^10 * 3", "Do math", "plus"},
-	{"liquid glass", "Ask Grok or search X", "sparkles"},
+	{"liquid glass", "Search Google", "globe"},
 }
 
 // Welcome is the welcome's state.
@@ -293,7 +293,7 @@ func (w *Welcome) keyStep(c *ui.Context, p *Panel, pal Palette) {
 		}
 		ui.Column(c).Gap(4).Children(func() {
 			ui.Text(c, "Welcome to Nanolight").FontSize(22).FontWeight(W600).LetterSpacing(-0.3).TextColor(pal.Text).NoWrap()
-			ui.Text(c, "Apps, math, Grok and X — one keystroke away.").FontSize(13.5).TextColor(pal.Sub).NoWrap()
+			ui.Text(c, "Apps, math and Google — one keystroke away.").FontSize(13.5).TextColor(pal.Sub).NoWrap()
 		})
 	})
 	Hairline(c, pal)

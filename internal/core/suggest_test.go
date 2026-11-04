@@ -105,7 +105,8 @@ func TestHeights(t *testing.T) {
 	}
 	names := []string{"Safari", "Mail", "Maps", "Pages", "Calendar", "Calculator", "FaceTime"}
 	r.Build("a", names, nil, nil, []string{"a1", "a2", "a3", "a4"})
-	if h := SearchHeight(&r); h != MaxHeight {
+	// Every app, the search and four completions: 97 + 1 + 12 + 11×40 + 2×28.
+	if h := SearchHeight(&r); h != 606 {
 		t.Errorf("full %v", h)
 	}
 	if y, h := RowTop(&r, 6); y != 28+6*40+28 || h != 40 {
