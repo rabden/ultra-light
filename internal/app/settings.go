@@ -42,6 +42,7 @@ func (s prefs) Choice() hotkey.Choice { return s.a.choice }
 // Apply registers the shortcut and keeps it; it syncs.
 func (s prefs) Apply(c hotkey.Choice) {
 	a := s.a
+	a.giveBack(c)
 	a.useKey(c)
 	a.kv.Set(store.KeyHotkey, c.Name())
 	a.touched(true)
@@ -50,6 +51,9 @@ func (s prefs) Apply(c hotkey.Choice) {
 
 // KeyProblem: the shortcut couldn't be registered (taken on X11, or no
 // GlobalShortcuts portal on Wayland).
+func (s prefs) KeyTaken(c hotkey.Choice) (string, bool) { return s.a.keyTakenBy(c) }
+func (s prefs) TakeKey(c hotkey.Choice)                 { s.a.takeKey(c) }
+
 func (s prefs) KeyProblem() string {
 	if s.a.hotkeyErr == nil {
 		return ""
