@@ -39,9 +39,19 @@ func (a *App) settingsChanged() {
 
 func (s prefs) Choice() hotkey.Choice { return s.a.choice }
 
-// Apply registers the shortcut and keeps it; it syncs.
+// Apply registers the shortcut and keeps it; it syncs. A key GNOME holds
+// that Nanolight can take over is taken first: left to GNOME, the portal
+// binds no key and the shortcut does nothing.
 func (s prefs) Apply(c hotkey.Choice) {
-	a := s.a
+	if what, canFree := s.a.keyTakenBy(c); what != "" && canFree {
+		s.a.takeKey(c)
+		return
+	}
+	s.a.applyKey(c)
+}
+
+// applyKey uses c as the shortcut, letting go of the one before, and keeps it.
+func (a *App) applyKey(c hotkey.Choice) {
 	a.giveBack(c)
 	a.useKey(c)
 	a.kv.Set(store.KeyHotkey, c.Name())

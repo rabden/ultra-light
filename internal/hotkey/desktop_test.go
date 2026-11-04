@@ -59,8 +59,8 @@ func TestKDEClashes(t *testing.T) {
 
 func TestAccels(t *testing.T) {
 	for _, tc := range []struct {
-		c Choice
-		a string
+		c    Choice
+		a    string
 		want bool
 	}{
 		{OptSpace, "<Primary><Alt>space", true},

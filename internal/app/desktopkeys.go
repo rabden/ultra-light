@@ -168,7 +168,7 @@ func (a *App) takeKey(c hotkey.Choice) {
 	}
 	a.setFreed(fs)
 	a.dkeys.list, a.dkeys.at = readDeskKeys(), time.Now()
-	prefs{a}.Apply(c)
+	a.applyKey(c)
 }
 
 // giveBack puts back the GNOME shortcuts Nanolight took a key from, but
