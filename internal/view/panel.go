@@ -267,7 +267,7 @@ func (p *Panel) field(c *ui.Context) {
 	}
 	ui.Box(c).Grow(1).Children(func() {
 		in := ui.TextInputBase(c.Key("query"), &p.query).Bind(&p.input).FontSize(fieldSize).PaddingX(2).
-			FillWidth().Placeholder("Search apps, do math, ask Grok…").PlaceholderColor(pal.Sub.Alpha(0.75)).
+			FillWidth().Placeholder("Search apps, do math, search Google…").PlaceholderColor(pal.Sub.Alpha(0.75)).
 			TextColor(pal.Text).CaretWidth(1.5).Label("Search").OnTextKey(p.textKey)
 		n := utf8.RuneCountInString(p.query)
 		switch {
@@ -427,8 +427,6 @@ func (p *Panel) row(c *ui.Context, i int, r core.Row) {
 		default:
 			verb, sub := "Search Google for", "google.com"
 			switch r.Kind {
-			case core.KindAskGrok:
-				verb, sub = "Ask Grok", "grok.com"
 			}
 			ui.Text(c, verb+" “"+q+"”").FontSize(13.5).FontWeight(W500).TextColor(pal.Text).SingleLine().Shrink(1)
 			ui.Text(c, sub).FontSize(12).TextColor(pal.Sub.Alpha(0.8)).NoWrap()
@@ -467,8 +465,6 @@ func (p *Panel) tile(c *ui.Context, r core.Row) {
 		switch r.Kind {
 		case core.KindCalc:
 			name = "plus.forwardslash.minus"
-		case core.KindAskGrok:
-			name = "sparkles"
 		case core.KindSearchWeb:
 			name = "globe"
 		case core.KindSuggest:
@@ -752,8 +748,6 @@ func (p *Panel) activateWith(set func(string)) {
 			return
 		}
 		p.Host.Hide()
-	case core.KindAskGrok:
-		p.go_(core.URL(r.Kind, p.query))
 	case core.KindSearchWeb:
 		p.Search(p.query, !p.SearchesOut)
 	case core.KindSettings:

@@ -14,7 +14,7 @@
   ],
   "linux": {
     "maintainer": "Nanolight <nanolight@users.noreply.github.com>",
-    "comment": "A launcher: apps, math, Google, Grok and Raycast extensions",
+    "comment": "A launcher: apps, math, Google and Raycast extensions",
     "categories": [
       "Utility"
     ],
