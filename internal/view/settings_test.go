@@ -104,7 +104,7 @@ func TestSettingsOpeners(t *testing.T) {
 	}
 	for _, s := range []string{"Google Suggestions", "Open Searches in Browser", "This PC", "Open at Login", "Show in Tray",
 		"Sync Across Computers", "Sign In with Codegraff", "Terms & Privacy", "Nanolight 2.0.1", "Check for Updates",
-		"Show Welcome Again", "Quit Nanolight", "Alt Space", "Ctrl Shift Space", "Back"} {
+		"Show Welcome Again", "Quit Nanolight", "Super Space", "Super Alt Space", "Back"} {
 		if !r.tt.HasText(s) {
 			t.Errorf("Settings lacks %q", s)
 		}
@@ -291,10 +291,10 @@ func TestSettingsKeyboardOrder(t *testing.T) {
 
 func TestSettingsShortcutProblem(t *testing.T) {
 	r, f := newPrefsRig(t)
-	f.problem = "Alt Space can't be used here."
+	f.problem = "Super Space can't be used here."
 	r.p.OpenSettings()
 	r.settle()
-	if !r.tt.HasText("Alt Space can't be used here.") {
+	if !r.tt.HasText("Super Space can't be used here.") {
 		t.Fatal("the problem shows")
 	}
 	r.snap("settings-problem")
@@ -319,11 +319,11 @@ func TestSettingsShortcutProblem(t *testing.T) {
 
 func TestSettingsTakenKey(t *testing.T) {
 	r, f := newPrefsRig(t)
-	f.taken = map[hotkey.Choice]string{hotkey.CmdSpace: "opens GNOME's window menu"}
+	f.taken = map[hotkey.Choice]string{hotkey.CmdSpace: "switches the keyboard layout"}
 	r.p.OpenSettings()
 	r.settle()
 	r.snap("settings-taken")
-	if !r.tt.HasText("Alt Space opens GNOME's window menu.") || !r.tt.HasText("Use Anyway") {
+	if !r.tt.HasText("Super Space switches the keyboard layout.") || !r.tt.HasText("Use Anyway") {
 		t.Fatal("the note says what holds it")
 	}
 	if got := r.p.Height(); got != min(float32(core.SettingsHeight)+problemH, core.MaxHeight) {

@@ -25,35 +25,38 @@ func TestGNOMEClashes(t *testing.T) {
 	if len(bs) != 4 {
 		t.Fatalf("%d bindings: %+v", len(bs), bs)
 	}
-	b, ok := Clash(CmdSpace, bs)
+	b, ok := Clash(OptSpace, bs)
 	if !ok || b.Key != "activate-window-menu" || b.What != "opens GNOME's window menu" {
 		t.Fatalf("Alt Space: %+v %v", b, ok)
 	}
-	if b.Without(CmdSpace) != "@as []" || b.Value() != `["<Alt>space"]` {
-		t.Errorf("values %q %q", b.Without(CmdSpace), b.Value())
+	if b.Without(OptSpace) != "@as []" || b.Value() != `["<Alt>space"]` {
+		t.Errorf("values %q %q", b.Without(OptSpace), b.Value())
+	}
+	if b, ok := Clash(CmdSpace, bs); !ok || b.What != "switches the keyboard layout" {
+		t.Errorf("Super Space: %+v", b)
 	}
 	if b, ok := Clash(CtrlSpace, bs); !ok || b.What != "switches the input method" {
 		t.Errorf("Ctrl Space: %+v", b)
 	}
-	for _, c := range []Choice{OptSpace, OptCmdSpace} {
+	for _, c := range []Choice{OptCmdSpace} {
 		if b, ok := Clash(c, bs); ok {
 			t.Errorf("%s taken by %+v", c, b)
 		}
 	}
 	two := Binding{Accels: []string{"<Alt>space", "<Alt>F3"}}
-	if two.Without(CmdSpace) != `["<Alt>F3"]` {
-		t.Errorf("without: %s", two.Without(CmdSpace))
+	if two.Without(OptSpace) != `["<Alt>F3"]` {
+		t.Errorf("without: %s", two.Without(OptSpace))
 	}
 }
 
 func TestKDEClashes(t *testing.T) {
 	bs := ParseKDE(kdeRC)
-	b, ok := Clash(CmdSpace, bs)
+	b, ok := Clash(OptSpace, bs)
 	if !ok || b.Desktop != "KDE" || b.What != "is the “KRunner” shortcut of KRunner" {
 		t.Fatalf("Alt Space: %+v %v", b, ok)
 	}
-	if _, ok := Clash(OptSpace, bs); ok {
-		t.Error("Ctrl Alt Space is free")
+	if _, ok := Clash(CmdSpace, bs); ok {
+		t.Error("Super Space is free")
 	}
 }
 
@@ -63,13 +66,16 @@ func TestAccels(t *testing.T) {
 		a    string
 		want bool
 	}{
-		{OptSpace, "<Primary><Alt>space", true},
-		{OptSpace, "<Control><Mod1>Space", true},
-		{OptSpace, "Ctrl+Alt+Space", true},
-		{OptCmdSpace, "<Shift><Control>space", true},
+		{OptSpace, "<Alt>space", true},
+		{OptSpace, "<Mod1>Space", true},
+		{OptSpace, "Alt+Space", true},
+		{OptCmdSpace, "<Alt><Super>space", true},
+		{OptCmdSpace, "Meta+Alt+Space", true},
+		{CmdSpace, "<Super>space", true},
+		{CmdSpace, "Meta+Space", true},
 		{CtrlSpace, "<Control><Shift>space", false},
-		{CmdSpace, "<Super>space", false},
-		{CmdSpace, "<Alt>F2", false},
+		{CmdSpace, "<Alt>space", false},
+		{OptSpace, "<Alt>F2", false},
 	} {
 		if got := tc.c.Holds(tc.a); got != tc.want {
 			t.Errorf("%s holds %q: %v", tc.c, tc.a, got)

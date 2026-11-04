@@ -12,7 +12,7 @@ import (
 
 // The first run, inside the panel itself (onboard.zig). Three steps, each
 // one thing to do:
-//  1. the shortcut: Alt Space by default, and whether something else holds
+//  1. the shortcut: Super Space by default, and whether something else holds
 //     it, with the one thing that frees it;
 //  2. press it for real: the panel closes, and comes back on the second
 //     press (a desktop shortcut running nanolight --toggle counts);

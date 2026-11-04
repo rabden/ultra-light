@@ -10,10 +10,11 @@ import "strings"
 type Choice int
 
 const (
-	CmdSpace    Choice = iota // Alt Space on a PC, where ⌘ sits
-	OptSpace                  // Ctrl Alt Space
+	// The Mac's keys by meaning: ⌘ is Super, ⌥ Alt, ⌃ Ctrl.
+	CmdSpace    Choice = iota // Super Space
+	OptSpace                  // Alt Space
 	CtrlSpace                 // Ctrl Space
-	OptCmdSpace               // Ctrl Shift Space
+	OptCmdSpace               // Super Alt Space
 )
 
 // All are the offered keys, in the order the chips show them.
@@ -35,7 +36,7 @@ func Parse(s string) (Choice, bool) {
 	return CmdSpace, false
 }
 
-// Load reads a kept name, falling back to the default (Alt Space).
+// Load reads a kept name, falling back to the default (Super Space).
 func Load(s string) Choice {
 	c, _ := Parse(s)
 	return c
@@ -45,13 +46,13 @@ func Load(s string) Choice {
 func (c Choice) Held() string {
 	switch c {
 	case CmdSpace:
-		return "Alt"
+		return "Super"
 	case OptSpace:
-		return "Ctrl Alt"
+		return "Alt"
 	case CtrlSpace:
 		return "Ctrl"
 	}
-	return "Ctrl Shift"
+	return "Super Alt"
 }
 
 // Mods are the modifier keys one by one, for the welcome's key caps.
@@ -67,13 +68,13 @@ func (c Choice) String() string { return c.Held() + " " + c.Key() }
 func (c Choice) Accelerator() string {
 	switch c {
 	case CmdSpace:
-		return "Alt+Space"
+		return "Super+Space"
 	case OptSpace:
-		return "Ctrl+Alt+Space"
+		return "Alt+Space"
 	case CtrlSpace:
 		return "Ctrl+Space"
 	}
-	return "Ctrl+Shift+Space"
+	return "Super+Alt+Space"
 }
 
 // Step returns the offered key before (dir < 0) or after it, wrapping.
@@ -89,11 +90,11 @@ func (c Choice) Step(dir int) Choice {
 func (c Choice) GTK() string {
 	switch c {
 	case CmdSpace:
-		return "<Alt>space"
+		return "<Super>space"
 	case OptSpace:
-		return "<Primary><Alt>space"
+		return "<Alt>space"
 	case CtrlSpace:
 		return "<Primary>space"
 	}
-	return "<Primary><Shift>space"
+	return "<Super><Alt>space"
 }

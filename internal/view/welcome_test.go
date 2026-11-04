@@ -48,8 +48,8 @@ func TestWelcome(t *testing.T) {
 	if !r.tt.HasText("Welcome to Nanolight") || !r.tt.HasText("1 of 3") {
 		t.Fatal("step 1")
 	}
-	// Who holds Alt Space; going on anyway is said as such.
-	if !r.tt.HasText("Alt Space is held by another app or your desktop.") || !r.tt.HasText("Use Alt Space anyway") ||
+	// Who holds Super Space; going on anyway is said as such.
+	if !r.tt.HasText("Super Space is held by another app or your desktop.") || !r.tt.HasText("Use Super Space anyway") ||
 		!r.tt.HasText("Pick another key above.") {
 		t.Fatal("the clash")
 	}
@@ -59,7 +59,7 @@ func TestWelcome(t *testing.T) {
 	r.snap("welcome-1-held")
 	r.tt.Key(0, ui.KeyRight)
 	r.settle()
-	if !r.tt.HasText("Ctrl Alt Space is free on this PC.") || !r.tt.HasText("Continue") || r.p.Height() != 330 {
+	if !r.tt.HasText("Alt Space is free on this PC.") || !r.tt.HasText("Continue") || r.p.Height() != 330 {
 		t.Fatal("free")
 	}
 	r.snap("welcome-1")
@@ -68,7 +68,7 @@ func TestWelcome(t *testing.T) {
 	if len(st.applied) != 1 || st.applied[0] != hotkey.OptSpace {
 		t.Fatalf("applied %v", st.applied)
 	}
-	if !r.tt.HasText("Press Ctrl Alt Space now") || !r.tt.HasText("2 of 3") || r.p.Height() != 318 {
+	if !r.tt.HasText("Press Alt Space now") || !r.tt.HasText("2 of 3") || r.p.Height() != 318 {
 		t.Fatal("step 2")
 	}
 	r.snap("welcome-2")
@@ -135,7 +135,7 @@ func TestWelcomeWithoutKeys(t *testing.T) {
 	}
 	r := newWelcomeRig(t, st)
 	w := &r.p.Welcome
-	if !r.tt.HasText("Alt Space can't be used here.") || !r.tt.HasText("nanolight --toggle") || !r.tt.HasText("Continue") {
+	if !r.tt.HasText("Super Space can't be used here.") || !r.tt.HasText("nanolight --toggle") || !r.tt.HasText("Continue") {
 		t.Fatal("the --toggle way")
 	}
 	if r.p.Height() != 330+unusableExtra {
@@ -176,11 +176,11 @@ func TestWelcomeDesktopKey(t *testing.T) {
 }
 
 func TestWelcomeTakenKey(t *testing.T) {
-	st := &steps{taken: map[hotkey.Choice]string{hotkey.CmdSpace: "opens GNOME's window menu"},
+	st := &steps{taken: map[hotkey.Choice]string{hotkey.CmdSpace: "switches the keyboard layout"},
 		held: map[hotkey.Choice]KeyState{hotkey.CmdSpace: KeyTaken}}
 	r := newWelcomeRig(t, st)
 	r.snap("welcome-taken")
-	if !r.tt.HasText("Alt Space opens GNOME's window menu.") || !r.tt.HasText("Use Alt Space anyway") {
+	if !r.tt.HasText("Super Space switches the keyboard layout.") || !r.tt.HasText("Use Super Space anyway") {
 		t.Fatal("says what holds it, and offers it anyway")
 	}
 	// Return takes it over, rather than using a key that won't work.
