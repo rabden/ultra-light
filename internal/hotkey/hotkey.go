@@ -84,3 +84,16 @@ func (c Choice) Step(dir int) Choice {
 	}
 	return (c + 1) % n
 }
+
+// GTK is the key as GNOME's settings write it: "<Primary><Alt>space".
+func (c Choice) GTK() string {
+	switch c {
+	case CmdSpace:
+		return "<Alt>space"
+	case OptSpace:
+		return "<Primary><Alt>space"
+	case CtrlSpace:
+		return "<Primary>space"
+	}
+	return "<Primary><Shift>space"
+}

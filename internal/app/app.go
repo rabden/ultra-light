@@ -65,6 +65,7 @@ type App struct {
 	acct     *account.Account
 	up       updates
 	dkeys    deskKeys
+	viaGNOME bool // the shortcut is GNOME's custom shortcut, not the portal's
 	page     pageState
 	sugg     suggester
 	ext      extRunner
@@ -277,10 +278,20 @@ func (a *App) place() {
 // useKey registers the shortcut, letting go of the one before.
 func (a *App) useKey(c hotkey.Choice) {
 	a.choice = c
-	if a.accel != "" {
+	if a.accel != "" && !a.viaGNOME {
 		mygo.GlobalShortcut.Unregister(a.accel)
-		a.accel = ""
 	}
+	a.accel = ""
+	// GNOME: its own custom shortcut, which needs no portal.
+	if onGNOME() {
+		err := gnomeBind(c)
+		if err == nil {
+			a.viaGNOME, a.hotkeyErr, a.accel = true, nil, c.Accelerator()
+			return
+		}
+		log.Printf("nanolight: GNOME's shortcut for %s: %v; asking the portal", c, err)
+	}
+	a.viaGNOME = false
 	if err := mygo.GlobalShortcut.Register(c.Accelerator(), a.Toggle); err != nil {
 		a.hotkeyErr = err
 		log.Printf("nanolight: %s can't be registered (%v); open it with nanolight --toggle or the tray", c, err)

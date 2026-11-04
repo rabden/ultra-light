@@ -68,6 +68,9 @@ func gnomeCustomKeys() []hotkey.Binding {
 	}
 	var bs []hotkey.Binding
 	for _, path := range paths[0].Accels {
+		if path == ownPath {
+			continue // Nanolight's own
+		}
 		where := schema + ".custom-keybinding:" + path
 		get := func(key string) string {
 			v, _ := exec.Command("gsettings", "get", where, key).Output()
