@@ -16,7 +16,12 @@ type steps struct {
 	held    map[hotkey.Choice]KeyState
 	login   bool
 	done    int
+	taken   map[hotkey.Choice]string
+	took    []hotkey.Choice
 }
+
+func (s *steps) KeyTaken(c hotkey.Choice) (string, bool) { return s.taken[c], true }
+func (s *steps) TakeKey(c hotkey.Choice)                 { s.took = append(s.took, c) }
 
 func (s *steps) Apply(c hotkey.Choice)             { s.applied = append(s.applied, c) }
 func (s *steps) KeyState(c hotkey.Choice) KeyState { return s.held[c] }
@@ -167,5 +172,21 @@ func TestWelcomeDesktopKey(t *testing.T) {
 	r := newWelcomeRig(t, st)
 	if !r.tt.HasText("Your desktop sets this shortcut, in its keyboard settings.") || !r.tt.HasText("Continue") {
 		t.Fatal("desktop")
+	}
+}
+
+func TestWelcomeTakenKey(t *testing.T) {
+	st := &steps{taken: map[hotkey.Choice]string{hotkey.CmdSpace: "opens GNOME's window menu"},
+		held: map[hotkey.Choice]KeyState{hotkey.CmdSpace: KeyTaken}}
+	r := newWelcomeRig(t, st)
+	r.snap("welcome-taken")
+	if !r.tt.HasText("Alt Space opens GNOME's window menu.") || !r.tt.HasText("Use Alt Space anyway") {
+		t.Fatal("says what holds it, and offers it anyway")
+	}
+	// Return takes it over, rather than using a key that won't work.
+	r.tt.Key(0, ui.KeyEnter)
+	r.settle()
+	if len(st.took) != 1 || len(st.applied) != 0 {
+		t.Fatalf("took %v applied %v", st.took, st.applied)
 	}
 }

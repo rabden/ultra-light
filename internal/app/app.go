@@ -64,6 +64,7 @@ type App struct {
 	tray     *mygo.Tray
 	acct     *account.Account
 	up       updates
+	dkeys    deskKeys
 	page     pageState
 	sugg     suggester
 	ext      extRunner

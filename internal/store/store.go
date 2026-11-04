@@ -28,6 +28,9 @@ const (
 	KeyUpdated       = "nanolight.updated"
 	KeyAccountEmail  = "nanolight.account.email"
 	KeyAccountSynced = "nanolight.account.synced"
+	// KeyFreed keeps the GNOME shortcuts Nanolight took a key from, as they
+	// were, to give back (Linux only).
+	KeyFreed = "nanolight.freed_keys"
 )
 
 // Store is a string-to-string map kept in a kv.json file. Safe for use from

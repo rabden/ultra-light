@@ -20,18 +20,23 @@ func (a *App) startWelcome() {
 
 // firstFreeKey: on a first run where the default key is the desktop's
 // (Alt Space: GNOME's window menu, KRunner), the first preset that's free
-// is chosen instead (decision 3). On Wayland the portal binds what it can.
+// is chosen instead (decision 3): one none of the desktop's shortcuts
+// holds, and on X11 one no other app grabbed.
 func (a *App) firstFreeKey() {
-	if Wayland() || a.hotkeyErr == nil || a.kv.Has(store.KeyHotkey) {
+	if a.kv.Has(store.KeyHotkey) {
+		return
+	}
+	if _, taken := a.clash(a.choice); !taken && a.hotkeyErr == nil {
 		return
 	}
 	for _, c := range hotkey.All {
-		if c != a.choice && !a.keyTaken(c) {
-			a.useKey(c)
-			if a.hotkeyErr == nil {
-				a.kv.Set(store.KeyHotkey, c.Name())
-				return
-			}
+		if _, taken := a.clash(c); taken || c == a.choice || !Wayland() && a.keyTaken(c) {
+			continue
+		}
+		a.useKey(c)
+		if a.hotkeyErr == nil {
+			a.kv.Set(store.KeyHotkey, c.Name())
+			return
 		}
 	}
 }
@@ -60,14 +65,19 @@ func (a *App) showWelcome() {
 	a.win.Invalidate()
 }
 
-func (h welcomeHost) Apply(c hotkey.Choice) { prefs(h).Apply(c) }
-func (h welcomeHost) Login(set *bool) bool  { return prefs(h).Login(set) }
-func (h welcomeHost) Done()                 { h.a.kv.Set(store.KeyOnboarded, "1") }
+func (h welcomeHost) Apply(c hotkey.Choice)                   { prefs(h).Apply(c) }
+func (h welcomeHost) Login(set *bool) bool                    { return prefs(h).Login(set) }
+func (h welcomeHost) Done()                                   { h.a.kv.Set(store.KeyOnboarded, "1") }
+func (h welcomeHost) KeyTaken(c hotkey.Choice) (string, bool) { return h.a.keyTakenBy(c) }
+func (h welcomeHost) TakeKey(c hotkey.Choice)                 { h.a.takeKey(c) }
 
 // KeyState: on X11 the key is grabbed and let go to see; on Wayland the
 // desktop's portal holds the keys, or there is none and no key works.
 func (h welcomeHost) KeyState(c hotkey.Choice) view.KeyState {
 	a := h.a
+	if _, taken := a.clash(c); taken {
+		return view.KeyTaken
+	}
 	if Wayland() {
 		if a.hotkeyErr != nil {
 			return view.KeyUnusable

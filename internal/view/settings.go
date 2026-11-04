@@ -32,6 +32,11 @@ type SettingsHost interface {
 	Apply(c hotkey.Choice)
 	// KeyProblem says why the shortcut doesn't open the panel here, or "".
 	KeyProblem() string
+	// KeyTaken says what of the desktop's own holds c ("opens GNOME's
+	// window menu"), or ""; canFree: whether Nanolight can take it over.
+	KeyTaken(c hotkey.Choice) (what string, canFree bool)
+	// TakeKey takes c from the desktop (kept, to give back) and uses it.
+	TakeKey(c hotkey.Choice)
 	// Login reports whether Nanolight opens at login; set changes it first.
 	Login(set *bool) bool
 	Suggest(on bool)
@@ -79,6 +84,8 @@ type Settings struct {
 
 	choice  hotkey.Choice
 	problem string
+	taken   string
+	canFree bool
 	login   bool
 	tray    bool
 	canTray bool
@@ -120,6 +127,7 @@ func (s *Settings) pull() {
 	}
 	s.choice = h.Choice()
 	s.problem = h.KeyProblem()
+	s.taken, s.canFree = h.KeyTaken(s.choice)
 	s.login = h.Login(nil)
 	s.tray, s.canTray = h.Tray(nil)
 	s.account = h.Account()
@@ -142,7 +150,7 @@ func (s *Settings) Height() float32 {
 	if !s.canTray {
 		h -= 46
 	}
-	if s.problem != "" {
+	if s.problem != "" || s.taken != "" {
 		h += problemH
 	}
 	return min(h, core.MaxHeight)
@@ -217,7 +225,10 @@ func (s *Settings) head(c *ui.Context, pal Palette) {
 func (s *Settings) body(c *ui.Context, p *Panel, pal Palette) {
 	SectionLabel(c, pal, "Open Nanolight with")
 	s.choices(c, p, pal)
-	if s.problem != "" {
+	switch {
+	case s.taken != "":
+		s.takenNote(c, p, pal)
+	case s.problem != "":
 		s.problemNote(c, p, pal)
 	}
 	SectionLabel(c, pal, "Search")
@@ -251,11 +262,53 @@ func (s *Settings) choices(c *ui.Context, p *Panel, pal Palette) {
 			bg, border, fg, w := pal.Tile.Alpha(0.5), pal.Rim, pal.Sub, W500
 			if on {
 				bg, border, fg, w = pal.Sel, pal.Text.Alpha(0.35), pal.Text, W600
+			} else if s.isTaken(ch) {
+				fg = pal.Sub.Alpha(0.45) // the desktop holds it
 			}
 			ch := ch
 			ui.Row(c.Key("key-"+ch.Name())).Height(36).PaddingX(14).AlignItems(ui.Center).Radius(10).
 				Background(bg).Border(1, border).Label(ch.String()).OnClick(func() { s.pick(ch) }).Children(func() {
 				ui.Text(c, ch.String()).FontSize(13.5).FontWeight(w).TextColor(fg).NoWrap()
+			})
+		}
+	})
+}
+
+func (s *Settings) isTaken(ch hotkey.Choice) bool {
+	if s.Hooks == nil {
+		return false
+	}
+	what, _ := s.Hooks.KeyTaken(ch)
+	return what != ""
+}
+
+// takenNote says the desktop keeps the key for itself, and offers to take
+// it over (GNOME) or to pick another.
+func (s *Settings) takenNote(c *ui.Context, p *Panel, pal Palette) {
+	ui.Row(c).FillWidth().Height(problemH-10).Padding(10, 12, 10, 12).Gap(10).Radius(10).
+		Background(pal.Warn.Alpha(0.1)).AlignItems(ui.Center).Shrink(0).Children(func() {
+		Symbol(c, "exclamationmark.triangle.fill", 14, Medium).TextColor(pal.Warn)
+		ui.Column(c).Grow(1).Shrink(1).Gap(3).Children(func() {
+			ui.Text(c, s.choice.String()+" "+s.taken+".").FontSize(12.5).FontWeight(W500).TextColor(pal.Text)
+			hint := "Change it in your desktop's shortcut settings, or pick another key."
+			if s.canFree {
+				hint = "Use it anyway to give it to Nanolight; another key gives it back."
+			}
+			ui.Text(c, hint).FontSize(12).TextColor(pal.Sub)
+		})
+		if s.canFree {
+			ch := s.choice
+			b := ui.Row(c.Key("take-key")).Height(28).PaddingX(10).Radius(8).AlignItems(ui.Center).Shrink(0).
+				Background(pal.Tile).Border(1, pal.Rim).Label("Use Anyway").OnClick(func() {
+				if s.Hooks != nil {
+					s.Hooks.TakeKey(ch)
+				}
+			})
+			if b.Hovered() {
+				b.Background(pal.Sel)
+			}
+			b.Children(func() {
+				ui.Text(c, "Use Anyway").FontSize(12).FontWeight(W500).TextColor(pal.Text).NoWrap()
 			})
 		}
 	})

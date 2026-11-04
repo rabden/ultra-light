@@ -28,11 +28,21 @@ type prefs struct {
 	welcomes    int
 	quits       int
 	ready       string
+	taken       map[hotkey.Choice]string
+	took        []hotkey.Choice
 }
 
 func (f *prefs) Choice() hotkey.Choice { return f.choice }
 func (f *prefs) Apply(c hotkey.Choice) { f.choice = c; f.applied = append(f.applied, c) }
 func (f *prefs) KeyProblem() string    { return f.problem }
+func (f *prefs) KeyTaken(c hotkey.Choice) (string, bool) {
+	return f.taken[c], true
+}
+func (f *prefs) TakeKey(c hotkey.Choice) {
+	f.took = append(f.took, c)
+	delete(f.taken, c)
+	f.Apply(c)
+}
 func (f *prefs) Login(set *bool) bool {
 	if set != nil {
 		f.login = *set
@@ -305,4 +315,25 @@ func TestSettingsShortcutProblem(t *testing.T) {
 		t.Fatalf("Quit at %v, panel %v", q, r.p.Height())
 	}
 	r.snap("settings-scrolled")
+}
+
+func TestSettingsTakenKey(t *testing.T) {
+	r, f := newPrefsRig(t)
+	f.taken = map[hotkey.Choice]string{hotkey.CmdSpace: "opens GNOME's window menu"}
+	r.p.OpenSettings()
+	r.settle()
+	r.snap("settings-taken")
+	if !r.tt.HasText("Alt Space opens GNOME's window menu.") || !r.tt.HasText("Use Anyway") {
+		t.Fatal("the note says what holds it")
+	}
+	if got := r.p.Height(); got != min(float32(core.SettingsHeight)+problemH, core.MaxHeight) {
+		t.Errorf("height %v", got)
+	}
+	if err := r.tt.Click("Use Anyway"); err != nil {
+		t.Fatal(err)
+	}
+	r.settle()
+	if len(f.took) != 1 || f.took[0] != hotkey.CmdSpace || r.tt.HasText("Use Anyway") {
+		t.Fatalf("took %v", f.took)
+	}
 }

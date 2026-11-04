@@ -43,6 +43,9 @@ const (
 	// KeyUnusable: no way to take a key here (Wayland without the portal);
 	// a desktop shortcut running nanolight --toggle is the way.
 	KeyUnusable
+	// KeyTaken: one of the desktop's own shortcuts (GNOME's window menu,
+	// KRunner) holds it, and gets it first.
+	KeyTaken
 )
 
 // WelcomeHost is what the steps ask of the app: none of it from a test.
@@ -55,6 +58,11 @@ type WelcomeHost interface {
 	Login(set *bool) bool
 	// Done: the welcome is over; keep that.
 	Done()
+	// KeyTaken says what of the desktop's holds c, or ""; canFree: whether
+	// Nanolight can take it over.
+	KeyTaken(c hotkey.Choice) (what string, canFree bool)
+	// TakeKey takes c from the desktop and uses it.
+	TakeKey(c hotkey.Choice)
 }
 
 type example struct{ q, what, icon string }
@@ -77,6 +85,8 @@ type Welcome struct {
 	reopenedAt       time.Time
 	login            bool
 	state            KeyState
+	takenWhat        string
+	canFree          bool
 	starts, steps    int
 	copiedAt         time.Time
 }
@@ -99,6 +109,7 @@ func (w *Welcome) Refresh() {
 		return // tests keep what they set
 	}
 	w.state = w.Hooks.KeyState(w.choice)
+	w.takenWhat, w.canFree = w.Hooks.KeyTaken(w.choice)
 	w.login = w.Hooks.Login(nil)
 }
 
@@ -139,7 +150,7 @@ func (w *Welcome) Height() float32 {
 		return 350
 	}
 	switch w.state {
-	case KeyHeld:
+	case KeyHeld, KeyTaken:
 		return 330 + heldExtra
 	case KeyUnusable:
 		return 330 + unusableExtra
@@ -202,12 +213,17 @@ func (w *Welcome) pick(ch hotkey.Choice) {
 	w.choice = ch
 	if w.Hooks != nil {
 		w.state = w.Hooks.KeyState(ch)
+		w.takenWhat, w.canFree = w.Hooks.KeyTaken(ch)
 	}
 }
 
 func (w *Welcome) next(s WelcomeStep) {
 	if w.step == StepKey && w.Hooks != nil {
-		w.Hooks.Apply(w.choice)
+		if w.state == KeyTaken && w.canFree {
+			w.Hooks.TakeKey(w.choice)
+		} else {
+			w.Hooks.Apply(w.choice)
+		}
 	}
 	w.step = s
 	w.steps++
@@ -289,6 +305,10 @@ func (w *Welcome) keyStep(c *ui.Context, p *Panel, pal Palette) {
 				bg, border, fg, wt := pal.Tile.Alpha(0.5), pal.Rim, pal.Sub, W500
 				if on {
 					bg, border, fg, wt = pal.Sel, pal.Text.Alpha(0.35), pal.Text, W600
+				} else if w.Hooks != nil {
+					if what, _ := w.Hooks.KeyTaken(ch); what != "" {
+						fg = pal.Sub.Alpha(0.45) // the desktop holds it
+					}
 				}
 				ch := ch
 				ui.Row(c.Key("wkey-"+ch.Name())).Height(36).PaddingX(16).AlignItems(ui.Center).Radius(10).
@@ -324,11 +344,21 @@ func (w *Welcome) status(c *ui.Context, p *Panel, pal Palette) {
 				line = key + " is held by another app or your desktop."
 			case KeyUnusable:
 				line = key + " can't be used here."
+			case KeyTaken:
+				line = key + " " + w.takenWhat + "."
 			}
 			Symbol(c, icon, 14, Regular).TextColor(tone)
 			ui.Text(c, line).FontSize(13).FontWeight(W500).TextColor(pal.Text).NoWrap()
 		})
 		switch w.state {
+		case KeyTaken:
+			hint := "Pick another key above, or change it in your desktop's settings."
+			if w.canFree {
+				hint = "Press Return to use it anyway: picking another key later gives it back."
+			}
+			ui.Row(c).Padding(0, 0, 0, 22).Children(func() {
+				ui.Text(c, hint).FontSize(12).TextColor(pal.Sub.Alpha(0.8)).NoWrap()
+			})
 		case KeyHeld:
 			// A PC has no one place to free a key: another one is the fix.
 			ui.Row(c).Padding(0, 0, 0, 22).Children(func() {
@@ -509,7 +539,7 @@ func (w *Welcome) footer(c *ui.Context, pal Palette) {
 		switch w.step {
 		case StepKey:
 			action = "Continue"
-			if w.state == KeyHeld {
+			if w.state == KeyHeld || w.state == KeyTaken && w.canFree {
 				action = "Use " + w.choice.String() + " anyway"
 			}
 		case StepDone:
