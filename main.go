@@ -26,6 +26,10 @@ func main() {
 		}
 	}
 	mygo.App.SetName("Nanolight")
+	// The Google page draws with WebKitGTK's DMA-BUF renderer where the
+	// host can (Wayland, a Mesa GPU), as Epiphany does: its fallback breaks
+	// up on hover on GNOME with AMD graphics.
+	mygo.App.SetDMABUFRenderer(mygo.DMABUFRendererAuto)
 	if !mygo.App.RequestSingleInstanceLock() {
 		return // the running copy shows or hides its panel (OnSecondInstance)
 	}

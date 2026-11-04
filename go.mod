@@ -2,7 +2,7 @@ module github.com/rabden/ultra-light
 
 go 1.27.3
 
-require github.com/egoist/mygo v0.7.5-0.20261103082858-e9f0d6a5945a
+require github.com/egoist/mygo v0.7.5-0.20261104032729-2bd03e09c673
 
 require (
 	github.com/ebitengine/purego v0.11.1 // indirect
